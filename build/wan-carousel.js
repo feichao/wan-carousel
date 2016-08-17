@@ -40,9 +40,12 @@
     this.imgCount = this.imgList.length || -1;
     this.imgInfo = this.imgList.map(function(index, img) {
       var itemp = $(img);
+      var $parent = itemp.parent();
       return {
         src: itemp.attr('src') || '',
-        href: itemp.parent().attr('href') || null
+        href: $parent.attr('href') || 'javascript:void(0)',
+        data: $parent.data() || {},
+        target: $parent.attr('target') || '_self'
       };
     });
   };
@@ -50,16 +53,21 @@
   //初始化DOM
   WanCarousel.prototype.initDom = function() {
     if (this.imgCount > 0) {
-      var imgSrc = this.imgInfo[0].src;
+      var imgFirst = this.imgInfo[0];
+      var imgSrc = imgFirst.src;
+
       var content = [
         '<div class="carousel-content">',
-        '  <a href="' + this.imgInfo[0].href + '">',
+        '  <a href="' + imgFirst.href + '" target="' + imgFirst.target + '">',
         '    <img class="item-left" src="' + imgSrc + '" alt="img">',
         '    <img class="item-middle" src="' + imgSrc + '" alt="img">',
         '    <img class="item-right" src="' + imgSrc + '" alt="img">',
         '  </a>',
         '</div>'
       ].join('');
+
+      // set data
+      $(content).find('a').data(imgFirst.data);
 
       var direction = [
         '<div class="carousel-direction hidden">',
@@ -181,13 +189,25 @@
       dirTemp = '0.000000%'; //bug in IE8, '0' is not good
       animation = 'cs-left';
       imgInfo = self.imgInfo[self.currentIndex];
-      self.imgContentLeft.attr('src', imgInfo.src).parent().attr('href', imgInfo.href);
+      self.imgContentLeft.attr('src', imgInfo.src)
+        .parent()
+        .removeData()
+        .data(imgInfo.data)
+        .attr('href', imgInfo.href)
+        .attr('target', imgInfo.target);
+
     } else {
       self.currentIndex = index >= 0 ? index : (self.currentIndex + 1) % self.imgCount;
       dirTemp = '66.666666%';
       animation = 'cs-right';
       imgInfo = self.imgInfo[self.currentIndex];
-      self.imgContentRight.attr('src', imgInfo.src).parent().attr('href', imgInfo.href);
+      self.imgContentRight.attr('src', imgInfo.src)
+        .parent()
+        .removeData()
+        .data(imgInfo.data)
+        .attr('href', imgInfo.href)
+        .attr('target', imgInfo.target);
+
     }
 
     self.setAnchor();
